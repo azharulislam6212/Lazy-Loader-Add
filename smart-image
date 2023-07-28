@@ -1,0 +1,51 @@
+{%- comment -%} 
+                     {% if image != blank or image_mob != blank %}
+                        {% render 'smart-image', image: image, image_mob: image_mob %}
+                      {% else %}
+                        {{ 'image' | placeholder_svg_tag: 'placeholder' }}
+                      {% endif %}
+
+{%- endcomment -%}
+
+
+
+{%- capture responsive_image_counter %}{% increment responsive_image_counter %}{% endcapture -%}
+{%- assign img_url = image | img_url: '1x1' | replace: '_1x1.', '_{width}x.' -%}
+
+{%- comment -%} Limit image widths to valid options based on image.width {%- endcomment -%}
+{%- assign image_widths = '80,100,180,360,540,720,900,1080,1296,1512,1728,1944,2160,2376,2592,2808,3024' | split: ',' -%}
+{%- capture image_widths -%}
+  {%- for width in image_widths -%}
+    {%- comment -%} Check if image width is less or equal to width {%- endcomment -%}
+    {%- assign width_num = width | plus: 0 | round -%}
+    {%- if image.width >= width_num -%}{{ width_num }},{%- endif -%}
+  {%- endfor -%}
+  {{ image.width }}
+{%- endcapture -%}
+{%- assign image_widths = image_widths | strip -%}
+
+
+
+<picture>
+	
+	<source
+		data-srcset="{{image_mob | img_url: 'master'}}"
+		media="--small" />
+	<source
+		data-srcset="{{image | img_url: 'master'}}"
+		media="--large" />
+    <img
+        data-src="{{ img_url }}"
+        class="responsive-image__image lazyload {{ image_class }}"  data-widths="[{{ image_widths }}]"
+        data-aspectratio="{{ image.aspect_ratio }}"
+        data-sizes="auto"
+        tabindex="-1"
+        alt="{{image.alt | escape}}"    {{ image_attributes }}/>
+        
+       
+          <noscript>
+            <img class="{{ image_class }}" src="{{ image | img_url: '2048x2048' }}" alt="{{ image.alt | escape }}">
+          </noscript>
+          
+
+</picture>
